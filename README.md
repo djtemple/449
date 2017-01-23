@@ -1,2 +1,2 @@
 # 449
-CPSC 449 Group Repository
+CPSC 449 Assignment 1 Repository
