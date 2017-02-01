@@ -29,5 +29,41 @@ import ApocTools
      (0,0) to (2,1).
 -}
 human    :: Chooser
-human b Normal        c = return (Just [(0,0),(2,1)])
-human b PawnPlacement c = return (Just [(2,2)])
+human b Normal c = do
+  if (c == Black) 
+  then print "Enter the move coordinates for player Black in the form 'src x srcy dstx dst y'\n (0 <= n <= 4, or just enter return for a pass) B2: "
+  else print "Enter the move coordinates for player White in the form 'src x srcy dstx dst y'\n (0 <= n <= 4, or just enter return for a pass) W2: "
+  input <- getLine
+  let coords = getInts input
+  if ((length coords) == 0)
+  then return Nothing
+  else return (Just [((coords !! 0), (coords !! 1)), ((coords !! 2), (coords !! 3))])
+
+human b PawnPlacement c = do
+  if (c == Black) 
+  then print "B"
+  else print "W"
+  input <- getLine
+  let coords = getInts input
+  if ((length coords) == 0)
+  then return Nothing
+  else return (Just [((coords !! 0), (coords !! 1))])
+
+
+getInts :: String -> [Int]
+getInts = map read . words 
+
+checkInput :: [Int] -> Bool
+checkInput x | ((length x) < 4) = False
+             | (((x !! 0) < 0) || ((x !! 0) > 4) = False
+             | (((x !! 1) < 0) || ((x !! 1) > 4) = False
+             | (((x !! 2) < 0) || ((x !! 2) > 4) = False
+             | (((x !! 0) < 3) || ((x !! 3) > 4) = False
+
+checkMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
+checkMove b player src dst | ((getFromBoard b src) == E) = False
+                           | (((getFromBoard b src) == WK) && (player == Black)) = False
+                           | (((getFromBoard b src) == WP) && (player == Black)) = False
+                           | (((getFromBoard b src) == BK) && (player == White)) = False
+                           | (((getFromBoard b src) == BP) && (player == White)) = False
+                        | otherwise = True
