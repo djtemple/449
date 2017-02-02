@@ -28,7 +28,13 @@ import ApocTools
 -}
 human    :: Chooser
 human b Normal c = do
+<<<<<<< Updated upstream
   print (prompt Normal c)
+=======
+  if (c == Black)
+  then print "Enter the move coordinates for player Black in the form 'src x srcy dstx dst y'\n (0 <= n <= 4, or just enter return for a pass) B2: "
+  else print "Enter the move coordinates for player White in the form 'src x srcy dstx dst y'\n (0 <= n <= 4, or just enter return for a pass) W2: "
+>>>>>>> Stashed changes
   input <- getLine
   let coords = getInts input
   if (((length coords) == 0) || ((checkInput coords) == False))
@@ -39,7 +45,13 @@ human b Normal c = do
      (0,0) to (2,1).
 -}
 human b PawnPlacement c = do
+<<<<<<< Updated upstream
   print (prompt PawnPlacement c)
+=======
+  if (c == Black)
+  then print "B"
+  else print "W"
+>>>>>>> Stashed changes
   input <- getLine
   let coords = getInts input
   if ((length coords) == 0)
@@ -49,7 +61,7 @@ human b PawnPlacement c = do
 {- | Helper function. Creates an integer list from the input string.
 -}
 getInts :: String -> [Int]
-getInts = map read . words 
+getInts = map read . words
 
 {- | Checks that a players input move is valid
      Returns True if: the move follows the rules for the piece in the source square
