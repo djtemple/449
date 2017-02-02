@@ -23,54 +23,96 @@ module ApocStrategyHuman (
 
 import ApocTools
 
-{- | Function to promt the user for a normal move and return the move to the game system
+{- | This is just a placeholder for the human strategy: it always chooses to play
+     (0,0) to (2,1).
 -}
 human    :: Chooser
 human b Normal c = do
-  if (c == Black) 
-  then print "Enter the move coordinates for player Black in the form 'src x srcy dstx dst y'\n (0 <= n <= 4, or just enter return for a pass) B2: "
-  else print "Enter the move coordinates for player White in the form 'src x srcy dstx dst y'\n (0 <= n <= 4, or just enter return for a pass) W2: "
+  print (prompt Normal c)
   input <- getLine
   let coords = getInts input
-  if ((length coords) == 0)
+  if (((length coords) == 0) || ((checkInput coords) == False))
   then return Nothing
   else return (Just [((coords !! 0), (coords !! 1)), ((coords !! 2), (coords !! 3))])
 
-{- | Function to promt the user for a pawn move and return the move to the game system
+{- | This is just a placeholder for the human strategy: it always chooses to play
+     (0,0) to (2,1).
 -}
 human b PawnPlacement c = do
-  if (c == Black) 
-  then print "B"
-  else print "W"
+  print (prompt PawnPlacement c)
   input <- getLine
   let coords = getInts input
   if ((length coords) == 0)
   then return Nothing
   else return (Just [((coords !! 0), (coords !! 1))])
 
-{- | A helper function to fetch the coordinates from the user input while ignoring white space and comments
+{- | Helper function. Creates an integer list from the input string.
 -}
 getInts :: String -> [Int]
 getInts = map read . words 
 
-
-{- | A helper function to check that a user is making a valid move
+{- | Checks that a players input move is valid
+     Returns True if: the move follows the rules for the piece in the source square
+     Returns False if: the source square is empty
+                       the source square belongs to the other player
+                       any other circumstances
 -}
 checkMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
-checkMove b player src dst | ((getFromBoard (theBoard b) src)== E)                          = False
-                           | (((getFromBoard (theBoard b) src) == WK) && (player == Black)) = False
-                           | (((getFromBoard (theBoard b) src) == WP) && (player == Black)) = False
-                           | (((getFromBoard (theBoard b) src) == BK) && (player == White)) = False
-                           | (((getFromBoard (theBoard b) src) == BP) && (player == White)) = False
-                           | otherwise                                                      = True
+checkMove b player src dst  | ((getFromBoard (theBoard b) src)== E)                                          = False
+                            | (((getFromBoard (theBoard b) src) == WK) && (player == Black))                 = False
+                            | (((getFromBoard (theBoard b) src) == WP) && (player == Black))                 = False
+                            | (((getFromBoard (theBoard b) src) == BK) && (player == White))                 = False
+                            | (((getFromBoard (theBoard b) src) == BP) && (player == White))                 = False
+                            | (((getFromBoard (theBoard b) src) == WK) && (checkKnightMove b White src dst)) = True
+                            | (((getFromBoard (theBoard b) src) == WP) && (checkPawnMove b White src dst))   = True
+                            | (((getFromBoard (theBoard b) src) == BK) && (checkKnightMove b Black src dst)) = True
+                            | (((getFromBoard (theBoard b) src) == BP) && (checkPawnMove b Black src dst))   = True
+                            | otherwise                                                                      = False
+
+{- | Helper function. Checks that a pawn is moving appropriately - forward to an empty cell or diagonally forward to an enemy cell.
+-}
+checkPawnMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
+checkPawnMove b Black (x,y) (x',y')| ((((x - x') == 1) && (y == y')) && (getFromBoard (theBoard b) (x',y') == E)) = True
+                                   | ((((x - x') == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == WP)) = True
+                                   | ((((x - x') == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == WK)) = True
+                                   | otherwise = False
+
+checkPawnMove b White (x,y) (x',y')| ((((x' - x) == 1) && (y == y')) && (getFromBoard (theBoard b) (x',y') == E)) = True
+                                   | ((((x' - x) == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == BP)) = True
+                                   | ((((x' - x) == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == BK)) = True
+                                   | otherwise = False
 
 
-{- | a helper function to check that the user has given correct input by checking that the integers are in range and all the necessary integers are there
+{- | Helper function. Checks that a knight is moving appropriately - in an 'L' to an empty or enemy cell
+-}
+checkKnightMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
+checkKnightMove b Black (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == BP) = False
+                                     | (getFromBoard (theBoard b) (x',y') == BK) = False
+                                     | (((abs (x - x')) == 1) && ((abs (y - y')) == 2)) = True
+                                     | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
+                                     | otherwise = False     
+checkKnightMove b White (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == WP) = False
+                                     | (getFromBoard (theBoard b) (x',y') == WK) = False
+                                     | (((abs (x - x')) == 1) && ((abs (y - y')) == 2)) = True
+                                     | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
+                                     | otherwise = False     
+
+
+{- | Helper function. Checks the user input contains all necessary values and all values are in range
 -}
 checkInput :: [Int] -> Bool
 checkInput x | ((length x) < 4) = False
              | (((x !! 0) < 0) || ((x !! 0) > 4)) = False
              | (((x !! 1) < 0) || ((x !! 1) > 4)) = False
              | (((x !! 2) < 0) || ((x !! 2) > 4)) = False
-             | (((x !! 0) < 3) || ((x !! 3) > 4)) = False
+             | (((x !! 3) < 0) || ((x !! 3) > 4)) = False
              | otherwise = True
+
+{- | Helper function. Selects the appropriate prompt based on player and playtype
+-}
+prompt :: PlayType -> Player -> String
+prompt Normal Black        = "Enter the move coordinates for player Black in the form 'srcx srcy dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) B2: "
+prompt Normal White        = "Enter the move coordinates for player White in the form 'srcx srcy dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) W2: "
+prompt PawnPlacement Black = "Enter the move coordinates for player Black in the form 'dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) B1: "
+prompt PawnPlacement White = "Enter the move coordinates for player Black in the form 'dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) W1: "
+
