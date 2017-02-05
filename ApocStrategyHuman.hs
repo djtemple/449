@@ -28,7 +28,7 @@ import ApocTools
 -}
 human    :: Chooser
 human b Normal c = do
-  print (prompt Normal c)
+  putStrLn (prompt Normal c)
   input <- getLine
   let coords = getInts input
   if ((length coords) == 0)
@@ -41,7 +41,7 @@ human b Normal c = do
 {- | TPrompts the user for a move, checks input, and reprompts if input is invalid (out of range or insufficent length)
 -}
 human b PawnPlacement c = do
-  print (prompt PawnPlacement c)
+  putStrLn (prompt PawnPlacement c)
   input <- getLine
   let coords = getInts input
   if ((length coords) == 0)
