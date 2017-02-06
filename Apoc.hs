@@ -50,24 +50,61 @@ move a b w = do
   bMove <- b a Normal Black
   wMove <- w a Normal White
   let new = update a bMove wMove
-  if ((bMove == Nothing) && (wMove == Nothing))then (putStrLn "Done") else putStrLn (show new) 
-  if ((bMove == Nothing) && (wMove == Nothing))then (putStrLn "Game over") else move new b w 
+  putStrLn (show new)
+  if (checkEnd new bMove wMove) then (putStrLn "Game over") else move new b w 
 
 update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
+update a Nothing Nothing = GameState
+                            (Passed)
+                            (blackPen a)
+                            (Passed)
+                            (whitePen a)
+                            (theBoard a)
+
+update a black Nothing = GameState
+                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                         then Played (((fromJust black) !! 0),((fromJust black) !! 1))
+                         else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
+                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                         then (blackPen a) 
+                         else ((blackPen a) + 1))
+                        (Passed)
+                        (whitePen a)
+                        (replace2
+                          (replace2 
+                            (theBoard a) 
+                            ((fromJust black) !! 1)
+                            (getFromBoard (theBoard a) ((fromJust black) !! 0)))
+                          ((fromJust black) !! 0)
+                          E)
+
+update a Nothing white = GameState
+                        (Passed)
+                        (blackPen a)
+                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                         then Played (((fromJust white) !! 0),((fromJust white) !! 1))
+                         else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
+                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                         then (whitePen a) 
+                         else ((whitePen a) + 1))
+                        (replace2
+                          (replace2
+                            (theBoard a)
+                            ((fromJust white) !! 1)
+                            (getFromBoard (theBoard a) ((fromJust white) !! 0)))
+                          ((fromJust white) !! 0)
+                          E)
+
 update a black white = GameState
-                        (if (black == Nothing) 
-                        then Passed 
-                        else if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
-                             then Played (((fromJust black) !! 0),((fromJust black) !! 1))
-                             else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
-                       (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
-                        then (blackPen a) 
-                        else ((blackPen a) + 1))
-                       (if (white == Nothing) 
-                        then Passed 
-                        else if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
-                             then Played (((fromJust white) !! 0),((fromJust white) !! 1))
-                             else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
+                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                         then Played (((fromJust black) !! 0),((fromJust black) !! 1))
+                         else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
+                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                         then (blackPen a) 
+                         else ((blackPen a) + 1))
+                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                         then Played (((fromJust white) !! 0),((fromJust white) !! 1))
+                         else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
                         (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
                          then (whitePen a) 
                          else ((whitePen a) + 1))
@@ -123,6 +160,11 @@ checkKnightMove b White (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == WP)
                                      | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
                                      | otherwise = False     
 
+checkEnd :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> Bool
+checkEnd a b w | ((blackPen a) == 2) = True
+               | ((whitePen a) == 2) = True
+               | ((b == Nothing) && (w == Nothing)) = True
+               | otherwise = False
 
 ---2D list utility functions-------------------------------------------------------
 
