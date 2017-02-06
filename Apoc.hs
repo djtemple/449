@@ -45,23 +45,84 @@ main = main' (unsafePerformIO getArgs)
 -}
 main'           :: [String] -> IO()
 main' args = do
-    putStrLn "\nThe initial board:"
-    print initBoard
+  putStrLn "\nThe initial board:"
+  print initBoard
+  black <- human (initBoard) Normal Black
+  white <- human (initBoard) Normal White
+  let a = update initBoard black white
+  putStrLn (show a)
 
-    putStrLn $ "\nThe initial board with back human (the placeholder for human) strategy having played one move\n"
-               ++ "(clearly illegal as we must play in rounds!):"
-    move <- human (initBoard) Normal Black
-    putStrLn (show $ GameState (if move==Nothing
-                                then Passed
-                                else Played (head (fromJust move), head (tail (fromJust move))))
-                               (blackPen initBoard)
-                               (Passed)
-                               (whitePen initBoard)
-                               (replace2 (replace2 (theBoard initBoard)
-                                                   ((fromJust move) !! 1)
-                                                   (getFromBoard (theBoard initBoard) ((fromJust move) !! 0)))
-                                         ((fromJust move) !! 0)
-                                         E))
+
+update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
+update a black white = GameState
+                        (if (black == Nothing) 
+                        then Passed 
+                        else if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                             then Played (((fromJust black) !! 0),((fromJust black) !! 1))
+                             else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
+                       (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                        then (blackPen a) 
+                        else ((blackPen a) + 1))
+                       (if (white == Nothing) 
+                        then Passed 
+                        else if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                             then Played (((fromJust white) !! 0),((fromJust white) !! 1))
+                             else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
+                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                         then (whitePen a) 
+                         else ((whitePen a) + 1))
+                        (replace2
+                          (replace2
+                            (replace2
+                              (replace2 
+                                (theBoard a) 
+                                ((fromJust black) !! 1)
+                                (getFromBoard (theBoard a) ((fromJust black) !! 0)))
+                              ((fromJust black) !! 0)
+                               E)
+                            ((fromJust white) !! 1)
+                            (getFromBoard (theBoard a) ((fromJust white) !! 0)))
+                          ((fromJust white) !! 0)
+                          E)
+
+-- | error checking
+checkMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
+checkMove b player src dst  | ((getFromBoard (theBoard b) src)== E)                                        = False
+                            | (((getFromBoard (theBoard b) src) == WK) && (player == Black))               = False
+                            | (((getFromBoard (theBoard b) src) == WP) && (player == Black))               = False
+                            | (((getFromBoard (theBoard b) src) == BK) && (player == White))               = False
+                            | (((getFromBoard (theBoard b) src) == BP) && (player == White))               = False
+                            | (((getFromBoard (theBoard b) src) == WK) && (checkKnightMove b White src dst)) = True
+                            | (((getFromBoard (theBoard b) src) == WP) && (checkPawnMove b White src dst))   = True
+                            | (((getFromBoard (theBoard b) src) == BK) && (checkKnightMove b Black src dst)) = True
+                            | (((getFromBoard (theBoard b) src) == BP) && (checkPawnMove b Black src dst))   = True
+                            | otherwise                                                                    = False
+
+
+checkPawnMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
+checkPawnMove b Black (x,y) (x',y')| ((((x - x') == 1) && (y == y')) && (getFromBoard (theBoard b) (x',y') == E)) = True
+                                   | ((((x - x') == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == WP)) = True
+                                   | ((((x - x') == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == WK)) = True
+                                   | otherwise = False
+
+checkPawnMove b White (x,y) (x',y')| ((((x' - x) == 1) && (y == y')) && (getFromBoard (theBoard b) (x',y') == E)) = True
+                                   | ((((x' - x) == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == BP)) = True
+                                   | ((((x' - x) == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == BK)) = True
+                                   | otherwise = False
+
+
+checkKnightMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
+checkKnightMove b Black (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == BP) = False
+                                     | (getFromBoard (theBoard b) (x',y') == BK) = False
+                                     | (((abs (x - x')) == 1) && ((abs (y - y')) == 2)) = True
+                                     | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
+                                     | otherwise = False     
+checkKnightMove b White (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == WP) = False
+                                     | (getFromBoard (theBoard b) (x',y') == WK) = False
+                                     | (((abs (x - x')) == 1) && ((abs (y - y')) == 2)) = True
+                                     | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
+                                     | otherwise = False     
+
 
 ---2D list utility functions-------------------------------------------------------
 
