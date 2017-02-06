@@ -12,11 +12,8 @@ License     : Permission to use, copy, modify, distribute and sell this software
 Maintainer  : rkremer@ucalgary.ca
 Stability   : experimental
 Portability : ghc 7.10.2 - 7.10.3
-
 This module is used for CPSC 449 for the Apocalypse assignment.
-
 Feel free to modify this file as you see fit.
-
 -}
 
 module Main (
@@ -39,7 +36,6 @@ import ApocStrategyHuman
 main = main' (unsafePerformIO getArgs)
 
 {- | We have a main' IO function so that we can either:
-
      1. call our program from GHCi in the usual way
      2. run from the command line by calling this function with the value from (getArgs)
 -}
@@ -47,11 +43,15 @@ main'           :: [String] -> IO()
 main' args = do
   putStrLn "\nThe initial board:"
   print initBoard
-  black <- human (initBoard) Normal Black
-  white <- human (initBoard) Normal White
-  let a = update initBoard black white
-  putStrLn (show a)
+  move initBoard human human
 
+move :: GameState -> Chooser -> Chooser -> IO()
+move a b w = do
+  bMove <- b a Normal Black
+  wMove <- w a Normal White
+  let new = update a bMove wMove
+  if ((bMove == Nothing) && (wMove == Nothing))then (putStrLn "Done") else putStrLn (show new) 
+  if ((bMove == Nothing) && (wMove == Nothing))then (putStrLn "Game over") else move new b w 
 
 update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
 update a black white = GameState
@@ -100,14 +100,14 @@ checkMove b player src dst  | ((getFromBoard (theBoard b) src)== E)             
 
 
 checkPawnMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
-checkPawnMove b Black (x,y) (x',y')| ((((x - x') == 1) && (y == y')) && (getFromBoard (theBoard b) (x',y') == E)) = True
-                                   | ((((x - x') == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == WP)) = True
-                                   | ((((x - x') == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == WK)) = True
+checkPawnMove b Black (x,y) (x',y')| ((((y - y') == 1) && (x == x')) && (getFromBoard (theBoard b) (x',y') == E)) = True
+                                   | ((((y - y') == 1) && ((abs (x - x')) == 1)) && (getFromBoard (theBoard b) (x',y') == WP)) = True
+                                   | ((((y - y') == 1) && ((abs (x - x')) == 1)) && (getFromBoard (theBoard b) (x',y') == WK)) = True
                                    | otherwise = False
 
-checkPawnMove b White (x,y) (x',y')| ((((x' - x) == 1) && (y == y')) && (getFromBoard (theBoard b) (x',y') == E)) = True
-                                   | ((((x' - x) == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == BP)) = True
-                                   | ((((x' - x) == 1) && ((abs (y - y')) == 1)) && (getFromBoard (theBoard b) (x',y') == BK)) = True
+checkPawnMove b White (x,y) (x',y')| ((((y' - y) == 1) && (x == x')) && (getFromBoard (theBoard b) (x',y') == E)) = True
+                                   | ((((y' - y) == 1) && ((abs (x - x')) == 1)) && (getFromBoard (theBoard b) (x',y') == BP)) = True
+                                   | ((((y' - y) == 1) && ((abs (x - x')) == 1)) && (getFromBoard (theBoard b) (x',y') == BK)) = True
                                    | otherwise = False
 
 
@@ -136,4 +136,3 @@ replace xs n elem = let (ys,zs) = splitAt n xs
 -- | Replaces the (x,y)th element in a list of lists with a new element.
 replace2        :: [[a]] -> (Int,Int) -> a -> [[a]]
 replace2 xs (x,y) elem = replace xs y (replace (xs !! y) x elem)
-
