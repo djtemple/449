@@ -13,7 +13,6 @@ state.
 Function to get locate and move given pieces to move based on given coordinates
 Parameters: (x,y) coordinates for human piece && (x',y') for updated move
             (x,y) coordinates for computer piece && (x'y') for their move
-
 -}
 
 makeMove :: GameState
