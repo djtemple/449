@@ -4,6 +4,7 @@ Description : Functions that deal with the updating and maintainting of the  gam
 state.
 -}
 
+import ApocTools
 
 {- | Game state code
 -}
@@ -11,8 +12,8 @@ state.
 
 {- |
 Function to get locate and move given pieces to move based on given coordinates
-Parameters: (x,y) coordinates for human piece && (x',y') for updated move
-            (x,y) coordinates for computer piece && (x'y') for their move
+Parameters: (x,y) coordinates for human piece && (x,y) coordinates for CPU move
+
 -}
 
-makeMove :: GameState
+update :: GameState (Board) -> ((Int, Int), (Int, Int)) -> Board
