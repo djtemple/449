@@ -12,8 +12,9 @@ import ApocTools
 
 {- |
 Function to get locate and move given pieces to move based on given coordinates
-Parameters: (x,y) coordinates for human piece && (x,y) coordinates for CPU move
-
+Parameters:   GameState - current game state
+              (x,y) coordinates for human piece move location
+              (x,y) coordinates for CPU move move location
 -}
 
-update :: GameState (Board) -> ((Int, Int), (Int, Int)) -> Board
+update :: GameState -> (Int, Int) -> (Int, Int) -> GameState
