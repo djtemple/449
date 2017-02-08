@@ -17,9 +17,7 @@ This is merely a skeleton to get you started on creating a strategy  playing the
 Apocalypse game.  It has VERY little functionality.
 -}
 
-module ApocStrategyCPU (
-   cpu
-   ) where
+module ApocStrategyCPU where
 
 import Control.Monad.Trans.State.Lazy
 import Data.Maybe (fromJust, isNothing)
