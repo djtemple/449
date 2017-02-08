@@ -28,6 +28,8 @@ import System.Environment
 import System.IO.Unsafe
 import ApocTools
 import ApocStrategyHuman
+import ApocStrategyCPU
+import ApocAltStrategyCPU
 
 
 ---Main-------------------------------------------------------------
@@ -45,13 +47,15 @@ main' args = do
   print initBoard
   move initBoard human human
 
+-- Call turns and update game board-----------------------------------------
+
 move :: GameState -> Chooser -> Chooser -> IO()
 move a b w = do
   bMove <- b a Normal Black
   wMove <- w a Normal White
   let new = update a bMove wMove
   putStrLn (show new)
-  if (checkEnd new bMove wMove) then (putStrLn "Game over") else move new b w 
+  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w 
 
 update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
 update a Nothing Nothing = GameState
@@ -122,7 +126,8 @@ update a black white = GameState
                           ((fromJust white) !! 0)
                           E)
 
--- | error checking
+-- Error/Validity Checking --------------------------------------------------------------------------------------
+-- | Checks if an arbitrary move is valid
 checkMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
 checkMove b player src dst  | ((getFromBoard (theBoard b) src)== E)                                        = False
                             | (((getFromBoard (theBoard b) src) == WK) && (player == Black))               = False
@@ -135,7 +140,7 @@ checkMove b player src dst  | ((getFromBoard (theBoard b) src)== E)             
                             | (((getFromBoard (theBoard b) src) == BP) && (checkPawnMove b Black src dst))   = True
                             | otherwise                                                                    = False
 
-
+-- | Checks if a pawn move is valid
 checkPawnMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
 checkPawnMove b Black (x,y) (x',y')| ((((y - y') == 1) && (x == x')) && (getFromBoard (theBoard b) (x',y') == E)) = True
                                    | ((((y - y') == 1) && ((abs (x - x')) == 1)) && (getFromBoard (theBoard b) (x',y') == WP)) = True
@@ -147,7 +152,7 @@ checkPawnMove b White (x,y) (x',y')| ((((y' - y) == 1) && (x == x')) && (getFrom
                                    | ((((y' - y) == 1) && ((abs (x - x')) == 1)) && (getFromBoard (theBoard b) (x',y') == BK)) = True
                                    | otherwise = False
 
-
+-- | Checks if a knight move is valid
 checkKnightMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
 checkKnightMove b Black (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == BP) = False
                                      | (getFromBoard (theBoard b) (x',y') == BK) = False
@@ -160,11 +165,43 @@ checkKnightMove b White (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == WP)
                                      | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
                                      | otherwise = False     
 
+--- End State -------------------------------------------------------------------
+-- | checks if the game is over
 checkEnd :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> Bool
 checkEnd a b w | ((blackPen a) == 2) = True
                | ((whitePen a) == 2) = True
                | ((b == Nothing) && (w == Nothing)) = True
+               | ((numPieces a WP) == 0) = True
+               | ((numPieces a BP) == 0) = True
                | otherwise = False
+
+-- | returns the number of pawns remaining on the board for a given player
+numPieces :: GameState -> Cell -> Int
+numPieces a p = numPieces' a p 0 0 0
+
+-- | Helper for numPieces
+numPieces' :: GameState -> Cell -> Int -> Int -> Int -> Int
+numPieces' a p 4 4 sum = sum
+numPieces' a p 4 y sum = numPieces' a p 0 (y + 1) (if ((getFromBoard (theBoard a) (4, y)) == p) then (sum + 1) else sum)
+numPieces' a p x y sum = numPieces' a p (x+1) y (if ((getFromBoard (theBoard a) (x, y)) == p) then (sum + 1) else sum)
+
+-- | Determines whether Black is the winner, White is the winner, or the game ends in a tie
+winner :: GameState -> String
+winner a | ((((blackPen a) == 2) && ((whitePen a) == 2)) && ((numPieces a WP) > (numPieces a BP))) = "White wins!"
+         | ((((blackPen a) /= 2) && ((whitePen a) /= 2)) && ((numPieces a WP) > (numPieces a BP))) = "White wins!"
+         | (((blackPen a) == 2) && ((whitePen a) /= 2))= "White wins!"
+         | ((((blackPen a) == 2) && ((whitePen a) == 2)) && ((numPieces a WP) == (numPieces a BP))) = "Tie!"
+         | ((((blackPen a) /= 2) && ((whitePen a) /= 2)) && ((numPieces a WP) == (numPieces a BP))) = "Tie!"
+         | otherwise = "Black wins!"
+
+-- | Prints end of game info to console
+wrapUp :: GameState -> IO()
+wrapUp a = do
+  putStr (winner a)
+  putStr " Black: "
+  putStr (show (numPieces a BP))
+  putStr "  White: "
+  putStr (show (numPieces a WP))
 
 ---2D list utility functions-------------------------------------------------------
 
