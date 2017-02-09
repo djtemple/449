@@ -125,10 +125,12 @@ update a black white = GameState
                             (getFromBoard (theBoard a) ((fromJust white) !! 0)))
                           ((fromJust white) !! 0)
                           E)
-                          
+
 -- Check if pawns are --------------------------------------------------------------------------------------
 -- | Checks the board if any panws have reached the opposite end of the board to transform into Knights
 checkPawnUpgrades :: GameState -> GameState
+checkPawnUpgrades b | (getFromBoard (theBoard)) 
+
 
 
 
