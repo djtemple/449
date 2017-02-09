@@ -55,7 +55,7 @@ move a b w = do
   wMove <- w a Normal White
   let new = update a bMove wMove
   putStrLn (show new)
-  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w 
+  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w
 
 update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
 update a Nothing Nothing = GameState
@@ -70,13 +70,13 @@ update a black Nothing = GameState
                          then Played (((fromJust black) !! 0),((fromJust black) !! 1))
                          else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
                         (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
-                         then (blackPen a) 
+                         then (blackPen a)
                          else ((blackPen a) + 1))
                         (Passed)
                         (whitePen a)
                         (replace2
-                          (replace2 
-                            (theBoard a) 
+                          (replace2
+                            (theBoard a)
                             ((fromJust black) !! 1)
                             (getFromBoard (theBoard a) ((fromJust black) !! 0)))
                           ((fromJust black) !! 0)
@@ -89,7 +89,7 @@ update a Nothing white = GameState
                          then Played (((fromJust white) !! 0),((fromJust white) !! 1))
                          else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
                         (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
-                         then (whitePen a) 
+                         then (whitePen a)
                          else ((whitePen a) + 1))
                         (replace2
                           (replace2
@@ -104,19 +104,19 @@ update a black white = GameState
                          then Played (((fromJust black) !! 0),((fromJust black) !! 1))
                          else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
                         (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
-                         then (blackPen a) 
+                         then (blackPen a)
                          else ((blackPen a) + 1))
                         (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
                          then Played (((fromJust white) !! 0),((fromJust white) !! 1))
                          else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
                         (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
-                         then (whitePen a) 
+                         then (whitePen a)
                          else ((whitePen a) + 1))
                         (replace2
                           (replace2
                             (replace2
-                              (replace2 
-                                (theBoard a) 
+                              (replace2
+                                (theBoard a)
                                 ((fromJust black) !! 1)
                                 (getFromBoard (theBoard a) ((fromJust black) !! 0)))
                               ((fromJust black) !! 0)
@@ -125,6 +125,14 @@ update a black white = GameState
                             (getFromBoard (theBoard a) ((fromJust white) !! 0)))
                           ((fromJust white) !! 0)
                           E)
+                          
+-- Check if pawns are --------------------------------------------------------------------------------------
+-- | Checks the board if any panws have reached the opposite end of the board to transform into Knights
+checkPawnUpgrades :: GameState -> GameState
+
+
+
+
 
 -- Error/Validity Checking --------------------------------------------------------------------------------------
 -- | Checks if an arbitrary move is valid
@@ -158,12 +166,12 @@ checkKnightMove b Black (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == BP)
                                      | (getFromBoard (theBoard b) (x',y') == BK) = False
                                      | (((abs (x - x')) == 1) && ((abs (y - y')) == 2)) = True
                                      | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
-                                     | otherwise = False     
+                                     | otherwise = False
 checkKnightMove b White (x,y) (x',y')| (getFromBoard (theBoard b) (x',y') == WP) = False
                                      | (getFromBoard (theBoard b) (x',y') == WK) = False
                                      | (((abs (x - x')) == 1) && ((abs (y - y')) == 2)) = True
                                      | (((abs (x - x')) == 2) && ((abs (y - y')) == 1)) = True
-                                     | otherwise = False     
+                                     | otherwise = False
 
 --- End State -------------------------------------------------------------------
 -- | checks if the game is over
