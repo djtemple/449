@@ -53,11 +53,11 @@ move :: GameState -> Chooser -> Chooser -> IO()
 move a b w = do
   bMove <- b a Normal Black
   wMove <- w a Normal White
-  let bValid = if (bMove == Nothing) then True else (checkMove a Black ((fromJust bMove) !! 0) ((fromJust bMove) !! 1)) 
+  let bValid = if (bMove == Nothing) then True else (checkMove a Black ((fromJust bMove) !! 0) ((fromJust bMove) !! 1))
   let wValid = if (wMove == Nothing) then True else (checkMove a White ((fromJust wMove) !! 0) ((fromJust wMove) !! 1))
   let new = update a bMove wMove bValid wValid
   putStrLn (show new)
-  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w 
+  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w
 
 -- | Both players pass
 update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> Bool -> Bool -> GameState
@@ -74,12 +74,12 @@ update a black Nothing bValid wValid = GameState
                          then Played (((fromJust black) !! 0),((fromJust black) !! 1))
                          else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
                         (if bValid
-                         then (blackPen a) 
+                         then (blackPen a)
                          else ((blackPen a) + 1))
                         (Passed)
                         (whitePen a)
                         (if bValid then (makeBoard a black Nothing) else (theBoard a))
-                    
+
 -- | White moves; Black passes
 update a Nothing white bValid wValid = GameState
                         (Passed)
@@ -88,57 +88,57 @@ update a Nothing white bValid wValid = GameState
                          then Played (((fromJust white) !! 0),((fromJust white) !! 1))
                          else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
                         (if wValid
-                         then (whitePen a) 
+                         then (whitePen a)
                          else ((whitePen a) + 1))
                         (if wValid then (makeBoard a Nothing white) else (theBoard a))
-                        
+
 -- | Both players move
 update a black white bValid wValid = GameState
                         (if bValid
                          then Played (((fromJust black) !! 0),((fromJust black) !! 1))
                          else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
                         (if bValid
-                         then (blackPen a) 
+                         then (blackPen a)
                          else ((blackPen a) + 1))
                         (if wValid
                          then Played (((fromJust white) !! 0),((fromJust white) !! 1))
                          else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
                         (if wValid
-                         then (whitePen a) 
+                         then (whitePen a)
                          else ((whitePen a) + 1))
                         (makeBoard a (if bValid then black else Nothing) (if wValid then white else Nothing))
 
 makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
 makeBoard a Nothing Nothing = theBoard a
-makeBoard a Nothing (Just [src, dst]) = 
+makeBoard a Nothing (Just [src, dst]) =
                         (replace2
-                          (replace2 
-                            (theBoard a) 
+                          (replace2
+                            (theBoard a)
                             dst
                             (getFromBoard (theBoard a) (src)))
                           src
                           E)
 
-makeBoard a (Just [src, dst]) Nothing = 
+makeBoard a (Just [src, dst]) Nothing =
                         (replace2
-                          (replace2 
-                            (theBoard a) 
+                          (replace2
+                            (theBoard a)
                             dst
                             (getFromBoard (theBoard a) (src)))
                           src
                           E)
 
 makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
-                                                                         (replace2 
-                                                                           (theBoard a) 
+                                                                         (replace2
+                                                                           (theBoard a)
                                                                             b'
                                                                            (getFromBoard (theBoard a) (b)))
                                                                           w'
                                                                          (getFromBoard (theBoard a) w))
                                           | (b' == w')               = (replace2
                                                                          (replace2
-                                                                            (replace2 
-                                                                               (theBoard a) 
+                                                                            (replace2
+                                                                               (theBoard a)
                                                                                 b'
                                                                                (if (((getFromBoard (theBoard a) b) == BK) && ((getFromBoard (theBoard a) w) == WP)) then BK else
                                                                                  (if (((getFromBoard (theBoard a) b) == BP) && ((getFromBoard (theBoard a) w) == WK)) then WK else E)))
@@ -149,8 +149,8 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
                                           | otherwise                = (replace2
                                                                          (replace2
                                                                            (replace2
-                                                                             (replace2 
-                                                                               (theBoard a) 
+                                                                             (replace2
+                                                                               (theBoard a)
                                                                                 b'
                                                                                (getFromBoard (theBoard a) b))
                                                                               b
@@ -160,10 +160,9 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
                                                                           w
                                                                           E)
 
--- Check if pawns are --------------------------------------------------------------------------------------
 -- | Checks the board if any panws have reached the opposite end of the board to transform into Knights
 checkPawnUpgrades :: GameState -> GameState
-checkPawnUpgrades b | (getFromBoard (theBoard)) 
+checkPawnUpgrades b | (getFromBoard (theBoard))
 
 
 
