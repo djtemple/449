@@ -110,8 +110,6 @@ update a black white bValid wValid = GameState
 
 makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
 makeBoard a Nothing Nothing = theBoard a
-
-
 makeBoard a Nothing (Just [src, dst]) = 
                         (replace2
                           (replace2 
@@ -130,20 +128,37 @@ makeBoard a (Just [src, dst]) Nothing =
                           src
                           E)
 
-makeBoard a (Just [bsrc, bdst]) (Just [wsrc, wdst]) = 
-                        (replace2
-                          (replace2
-                            (replace2
-                              (replace2 
-                                (theBoard a) 
-                                bdst
-                                (getFromBoard (theBoard a) (bsrc)))
-                              bsrc
-                              E)
-                             wdst
-                            (getFromBoard (theBoard a) (wsrc)))
-                          wsrc
-                           E)
+makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
+                                                                         (replace2 
+                                                                           (theBoard a) 
+                                                                            b'
+                                                                           (getFromBoard (theBoard a) (b)))
+                                                                          w'
+                                                                         (getFromBoard (theBoard a) w))
+                                          | (b' == w')               = (replace2
+                                                                         (replace2
+                                                                            (replace2 
+                                                                               (theBoard a) 
+                                                                                b'
+                                                                               (if (((getFromBoard (theBoard a) b) == BK) && ((getFromBoard (theBoard a) w) == WP)) then BK else
+                                                                                 (if (((getFromBoard (theBoard a) b) == BP) && ((getFromBoard (theBoard a) w) == WK)) then WK else E)))
+                                                                             b
+                                                                             E)
+                                                                           w
+                                                                           E)
+                                          | otherwise                = (replace2
+                                                                         (replace2
+                                                                           (replace2
+                                                                             (replace2 
+                                                                               (theBoard a) 
+                                                                                b'
+                                                                               (getFromBoard (theBoard a) b))
+                                                                              b
+                                                                              E)
+                                                                            w'
+                                                                           (getFromBoard (theBoard a) w))
+                                                                          w
+                                                                          E)
 
 -- Check if pawns are --------------------------------------------------------------------------------------
 -- | Checks the board if any panws have reached the opposite end of the board to transform into Knights
