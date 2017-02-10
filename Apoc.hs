@@ -53,78 +53,97 @@ move :: GameState -> Chooser -> Chooser -> IO()
 move a b w = do
   bMove <- b a Normal Black
   wMove <- w a Normal White
-  let new = update a bMove wMove
+  let bValid = if (bMove == Nothing) then True else (checkMove a Black ((fromJust bMove) !! 0) ((fromJust bMove) !! 1)) 
+  let wValid = if (wMove == Nothing) then True else (checkMove a White ((fromJust wMove) !! 0) ((fromJust wMove) !! 1))
+  let new = update a bMove wMove bValid wValid
   putStrLn (show new)
-  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w
+  if (checkEnd new bMove wMove) then (wrapUp new) else move new b w 
 
-update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
-update a Nothing Nothing = GameState
+-- | Both players pass
+update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> Bool -> Bool -> GameState
+update a Nothing Nothing bValid wValid = GameState
                             (Passed)
                             (blackPen a)
                             (Passed)
                             (whitePen a)
                             (theBoard a)
 
-update a black Nothing = GameState
-                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+-- | Black moves; White passes
+update a black Nothing bValid wValid = GameState
+                        (if (bValid)
                          then Played (((fromJust black) !! 0),((fromJust black) !! 1))
                          else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
-                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
-                         then (blackPen a)
+                        (if bValid
+                         then (blackPen a) 
                          else ((blackPen a) + 1))
                         (Passed)
                         (whitePen a)
-                        (replace2
-                          (replace2
-                            (theBoard a)
-                            ((fromJust black) !! 1)
-                            (getFromBoard (theBoard a) ((fromJust black) !! 0)))
-                          ((fromJust black) !! 0)
-                          E)
-
-update a Nothing white = GameState
+                        (if bValid then (makeBoard a black Nothing) else (theBoard a))
+                    
+-- | White moves; Black passes
+update a Nothing white bValid wValid = GameState
                         (Passed)
                         (blackPen a)
-                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                        (if wValid
                          then Played (((fromJust white) !! 0),((fromJust white) !! 1))
                          else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
-                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
-                         then (whitePen a)
+                        (if wValid
+                         then (whitePen a) 
                          else ((whitePen a) + 1))
-                        (replace2
-                          (replace2
-                            (theBoard a)
-                            ((fromJust white) !! 1)
-                            (getFromBoard (theBoard a) ((fromJust white) !! 0)))
-                          ((fromJust white) !! 0)
-                          E)
-
-update a black white = GameState
-                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
+                        (if wValid then (makeBoard a Nothing white) else (theBoard a))
+                        
+-- | Both players move
+update a black white bValid wValid = GameState
+                        (if bValid
                          then Played (((fromJust black) !! 0),((fromJust black) !! 1))
                          else Goofed (((fromJust black) !! 0),((fromJust black) !! 1)))
-                        (if (checkMove a Black ((fromJust black) !! 0) ((fromJust black) !! 1))
-                         then (blackPen a)
+                        (if bValid
+                         then (blackPen a) 
                          else ((blackPen a) + 1))
-                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
+                        (if wValid
                          then Played (((fromJust white) !! 0),((fromJust white) !! 1))
                          else Goofed (((fromJust white) !! 0),((fromJust white) !! 1)))
-                        (if (checkMove a White ((fromJust white) !! 0) ((fromJust white) !! 1))
-                         then (whitePen a)
+                        (if wValid
+                         then (whitePen a) 
                          else ((whitePen a) + 1))
+                        (makeBoard a (if bValid then black else Nothing) (if wValid then white else Nothing))
+
+makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
+makeBoard a Nothing Nothing = theBoard a
+
+
+makeBoard a Nothing (Just [src, dst]) = 
+                        (replace2
+                          (replace2 
+                            (theBoard a) 
+                            dst
+                            (getFromBoard (theBoard a) (src)))
+                          src
+                          E)
+
+makeBoard a (Just [src, dst]) Nothing = 
+                        (replace2
+                          (replace2 
+                            (theBoard a) 
+                            dst
+                            (getFromBoard (theBoard a) (src)))
+                          src
+                          E)
+
+makeBoard a (Just [bsrc, bdst]) (Just [wsrc, wdst]) = 
                         (replace2
                           (replace2
                             (replace2
-                              (replace2
-                                (theBoard a)
-                                ((fromJust black) !! 1)
-                                (getFromBoard (theBoard a) ((fromJust black) !! 0)))
-                              ((fromJust black) !! 0)
-                               E)
-                            ((fromJust white) !! 1)
-                            (getFromBoard (theBoard a) ((fromJust white) !! 0)))
-                          ((fromJust white) !! 0)
-                          E)
+                              (replace2 
+                                (theBoard a) 
+                                bdst
+                                (getFromBoard (theBoard a) (bsrc)))
+                              bsrc
+                              E)
+                             wdst
+                            (getFromBoard (theBoard a) (wsrc)))
+                          wsrc
+                           E)
 
 -- Check if pawns are --------------------------------------------------------------------------------------
 -- | Checks the board if any panws have reached the opposite end of the board to transform into Knights
