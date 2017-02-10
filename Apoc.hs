@@ -26,6 +26,8 @@ module Main (
 import Data.Maybe (fromJust, isNothing)
 import System.Environment
 import System.IO.Unsafe
+import System.Exit
+import CmdLineArgs
 import ApocTools
 import ApocStrategyHuman
 import ApocStrategyCPU
@@ -43,9 +45,39 @@ main = main' (unsafePerformIO getArgs)
 -}
 main'           :: [String] -> IO()
 main' args = do
-  putStrLn "\nThe initial board:"
-  print initBoard
-  move initBoard human human
+ 	args <- getArgs	
+	--Interactive mode---------------------
+	if (args == []) then do
+		putStrLn "Welcome to Apocalypse interactive mode, to begin select two player strategies."		--Simple welcome text
+		putStrLn "Names of possible strategies:\n  random\n  deterministic\n  human"						--List of possible strategies
+		putStrLn "Enter name for Black strategy:"
+		s1 <- getLine																														-- takes user input
+		bStrat <- (checkStrat s1)																									--checks user input for valid strategy
+		putStrLn "Enter name for White strategy:"
+		s2 <- getLine
+		wStrat<- (checkStrat s2)
+		putStrLn "\nThe initial board:"
+		print initBoard
+		move initBoard bStrat wStrat																								--if two valid strategies calls board using strategies		
+	--Command line--------------------------
+	else do
+		if not (( "random" `elem` args && "deterministic" `elem` args) || ("random" `elem` args && "human" `elem` args) || ("deterministic" `elem` args && "human"`elem` args) || ( args == ["random" , "random"]) || (args == ["deterministic" , "deterministic"]) || (args == ["human","human"])) then do		--Cases for all possible valid command inputs
+			putStrLn "Illegal strategy name entered\nLegal strategy names:\n  random\n  deterministic\n  human\nQuitting Game..."		
+			exitSuccess																													--if one or more illegal strategies, prints possible strategies & quits the game
+		else do
+			putStrLn"\nThe initial board:"																							--if two valid strategies entered, starts the game using strategies
+			print initBoard
+			bStrat <- checkStrat(args !!0)																							--takes args to be used as params
+			wStrat <- checkStrat(args !!1)
+			move initBoard bStrat wStrat
+	
+-- Checks user input for strategy, if valid returns strategy -----------------------
+checkStrat :: String -> IO Chooser
+checkStrat n
+	| n == "random" = return cpu								--checks input against possible valid strategies, returns strategy if valid
+	| n == "deterministic" = return cpuAlt
+	| n == "human" = return human
+	| otherwise = do putStrLn"Illegal strategy name entered\nLegal strategy names:\n  random\n  deterministic\n  human\nQuitting Game..."; exitSuccess		--if illegal strategy, prints possible strategies & quits the game
 
 -- Call turns and update game board-----------------------------------------
 
