@@ -109,8 +109,34 @@ move a b w = do
 -}
 update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> Bool -> Bool -> GameState
 
+<<<<<<< Updated upstream
 -- | Both players pass
 update a Nothing Nothing bValid wValid = GameState
+=======
+<<<<<<< HEAD
+{-|
+    The update function takes in the GameState and the moves made to update the
+    game board
+
+    GameState - the current game state
+    Maybe [(Int, Int)] - the first pawns move coordinates
+    Maybe [(Int, Int)] - the second pawns move coordinates
+
+    Returns the Updated GameState
+
+    There is 4 possible outcomes from the input
+    - Both players pass
+    - Black passes and White moves
+    - Black moves and White passes
+    - Both players move
+-}
+update :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> GameState
+update a Nothing Nothing = GameState
+=======
+-- | Both players pass
+update a Nothing Nothing bValid wValid = GameState
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                             (Passed)
                             (blackPen a)
                             (Passed)
@@ -157,6 +183,15 @@ update a black white bValid wValid = GameState
                          else ((whitePen a) + 1))
                         (makeBoard a (if bValid then black else Nothing) (if wValid then white else Nothing))
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+-- Check if pawns are --------------------------------------------------------------------------------------
+-- | Checks the board if any panws have reached the opposite end of the board to transform into Knights
+checkPawnUpgrades :: GameState -> GameState
+checkPawnUpgrades b | (getFromBoard (theBoard))
+=======
+>>>>>>> Stashed changes
 {- | updates the gameboard
      1. simple update if both moves are nothing, or only one player moves
      2. otherwise, checks if pieces are swapping spots and switches them, rather than adding and erasing pieces
@@ -164,6 +199,10 @@ update a black white bValid wValid = GameState
      4. otherwise, simply places both pieces
 -}
 makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 
 -- | no updates (called if both player moves are invalid)
 makeBoard a Nothing Nothing = theBoard a
