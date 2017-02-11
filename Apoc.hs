@@ -207,6 +207,20 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
                                                                              E)
                                                                            w
                                                                            E)
+                                          | (b' == w)                = (replace2
+                                                                         (replace2
+                                                                           (replace2
+                                                                             (replace2 
+                                                                               (theBoard a) 
+                                                                                w'
+                                                                               (getFromBoard (theBoard a) w))
+                                                                              w
+                                                                              E)
+                                                                            b'
+                                                                           (getFromBoard (theBoard a) b))
+                                                                          b
+                                                                          E)
+
                                           | otherwise                = (replace2
                                                                          (replace2
                                                                            (replace2
