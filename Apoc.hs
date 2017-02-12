@@ -174,19 +174,13 @@ makeBoard a Nothing Nothing = theBoard a
 
 -- | White moves; Black move is Nothing or invalid
 makeBoard a Nothing (Just [src, dst]) | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP && (numPieces a WK) < 2) = (replace2 (replace2 (theBoard a) (dst) WK) src E)
-                                      | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement White) WP)
+                                      | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement White) WP) -- TODO fix --
                                       | otherwise = (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
 
 -- | Black moves; White move is Nothing or invalid
-makeBoard a (Just [src, dst]) Nothing = if (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP)  then
-                            (replace2 (replace2 (theBoard a) (dst) BK) src E)
-                            else (replace2
-                                    (replace2
-                                      (theBoard a)
-                                      dst
-                                      (getFromBoard (theBoard a) (src)))
-                                    src
-                                    E)
+makeBoard a (Just [src, dst]) Nothing | (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP && (numPieces a BK) < 2) = (replace2 (replace2 (theBoard a) (dst) BK) src E)
+                                      | (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement Black) BP) -- TODO fix--
+                                      | otherwise = (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
 
 -- | Both players move. Check if pieces are swapping or clashing and represent accordinly
 makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
@@ -220,11 +214,25 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
                                                                            (getFromBoard (theBoard a) b))
                                                                           b
                                                                           E)
-                                          | (((fs b') == 0) && (fs w' ==4)) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' WK) w E)
-                                          | ((fs b') == 0) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' (getFromBoard (theBoard a) w)) w E)
-                                          | ((fs w') == 4) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' (getFromBoard (theBoard a) b))  b E) w' WK) w E)
 
-                                          | otherwise                = (replace2 (replace2 (replace2(replace2 (theBoard a) b' (getFromBoard (theBoard a) b))  b E) w' (getFromBoard (theBoard a) w)) w E)
+                                          -- | for when both moves result in a transformation of the pawns to knights --
+                                          | (((fs b') == 0) && (fs w' ==4) && ((numPieces a WK) < 2) && ((numPieces a BK) < 2)) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' WK) w E)
+                                          -- | for when both pawns reach the end but only white is able to transform --
+
+                                          -- | for when both pawns reach the end but only black is able to transform --
+
+                                          -- | for when both pawns reach the end but both cannot transform and must do pawnPlacement--
+
+                                          -- | for when only the black pawn gets the upgrade to a knight --
+                                          | ((fs b') == 0 && (numPieces a BK) < 2) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' (getFromBoard (theBoard a) w)) w E)
+                                          -- | for when a black pawn reaches the end but cannot become a knight :( --
+                                          | ((fs b') == 0) = (replace2 (replace2 (theBoard a) (b') E) (human a PawnPlacement Black) BP) -- | TODO FIX --
+                                          -- | for when only the white pawn gets an upgrade to a knight --
+                                          | ((fs w') == 4 && (numPieces a WK) < 2) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' (getFromBoard (theBoard a) b))  b E) w' WK) w E)
+                                            -- | for when a white pawn reaches the end but cannot become a knight :( --
+                                          | ((fs w') == 4) = (replace2 (replace2 (theBoard a) (w') E) (human a PawnPlacement White) WP) -- | TODO FIX --
+
+                                          | otherwise  = (replace2 (replace2 (replace2(replace2 (theBoard a) b' (getFromBoard (theBoard a) b))  b E) w' (getFromBoard (theBoard a) w)) w E)
 
 -- Error/Validity Checking --------------------------------------------------------------------------------------
 {- | Check if an arbitrary move is valid
