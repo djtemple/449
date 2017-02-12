@@ -12,9 +12,7 @@ License     : Permission to use, copy, modify, distribute and sell this software
 Maintainer  : rkremer@ucalgary.ca
 Stability   : experimental
 Portability : ghc 7.10.2 - 7.10.3
-This module is used for CPSC 449 for the Apocalypse assignment.
-This is merely a skeleton to get you started on creating a strategy for playing the
-Apocalypse game.  It has VERY little functionality.
+Human Strategy Module. Allows for human input on game moves. Written by Rachel Mclean.
 -}
 
 module ApocStrategyHuman (
@@ -23,23 +21,24 @@ module ApocStrategyHuman (
 
 import ApocTools
 
-
-{- | Prompts the user for a move, checks input, and reprompts if input is invalid (out of range or insufficent length)
+{- | Prompts the user for input for a move
+     1. Returns Nothing if the input is empty (Pass)
+     2. Returns first four (or two, for pawn placement) numbers of input, if all are in range
+     3. Reprompts if the list of numbers is too short or numbers are of range
+      --- Rachel Mclean
 -}
 human    :: Chooser
 human b Normal c = do
   putStrLn (prompt Normal c)
   input <- getLine
+  putStrLn input
   let coords = getInts input
   if ((length coords) == 0)
   then return Nothing
-  else if (checkInput coords) 
+  else if (checkInput coords)
        then return (Just [((coords !! 0), (coords !! 1)), ((coords !! 2), (coords !! 3))])
        else human b Normal c
 
-
-{- | TPrompts the user for a move, checks input, and reprompts if input is invalid (out of range or insufficent length)
--}
 human b PawnPlacement c = do
   putStrLn (prompt PawnPlacement c)
   input <- getLine
@@ -51,13 +50,16 @@ human b PawnPlacement c = do
        else human b PawnPlacement c
 
 
-{- | Helper function. Creates an integer list from the input string.
+{- | Helper function to take the digits from a string input and form an array
+      --- Rachel Mclean
 -}
 getInts :: String -> [Int]
-getInts = map read . words
+getInts = map read . words 
 
-
-{- | Helper function for normal moves. Checks the user input contains all necessary values and all values are in range
+{- | Helper function to check input for a normal move
+     1. Checks that the list of numbers taken from input is at least four numbers long
+     2. Checks that each of the four numbers are in range
+      --- Rachel Mclean
 -}
 checkInput :: [Int] -> Bool
 checkInput x | ((length x) < 4) = False
@@ -67,8 +69,10 @@ checkInput x | ((length x) < 4) = False
              | (((x !! 3) < 0) || ((x !! 3) > 4)) = False
              | otherwise = True
 
-
-{- | Helper function for pawn placement. Checks the user input contains all necessary values and all values are in range
+{- | Helper function to check input for a pawn placement move
+     1. Checks that the list of numbers taken from input is at least two numbers long
+     2. Checks that each of the four numbers are in range
+      --- Rachel Mclean
 -}
 checkInput2 :: [Int] -> Bool
 checkInput2 x | ((length x) < 2) = False
@@ -76,11 +80,16 @@ checkInput2 x | ((length x) < 2) = False
               | (((x !! 1) < 0) || ((x !! 1) > 4)) = False
               | otherwise = True
 
-{- | Helper function. Selects the appropriate prompt based on player and playtype
+
+{- | Helper function to find the appropriate prompt
+     1. Checks if the move is normal or pawn placement
+     2. Checks if the move is Black or White
+      --- Rachel Mclean
 -}
 prompt :: PlayType -> Player -> String
-prompt Normal Black        = "Enter the move coordinates for player Black in the form 'srcx srcy dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) B2: "
-prompt Normal White        = "Enter the move coordinates for player White in the form 'srcx srcy dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) W2: "
-prompt PawnPlacement Black = "Enter the move coordinates for player Black in the form 'dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) B1: "
-prompt PawnPlacement White = "Enter the move coordinates for player Black in the form 'dstx dsty'\n (0 <= n <= 4, or just enter return for a pass) W1: "
+prompt Normal Black = "Enter the move coordinates for player Black in the form 'srcx srcy dstx dsty' \n(0 <= n <= 4, or just enter return for a pass) B2: "
+prompt Normal White = "Enter the move coordinates for player White in the form 'srcx srcy dstx dsty' \n(0 <= n <= 4, or just enter return for a pass) W2: "
+prompt PawnPlacement Black = "Enter the move coordinates for player Black in the form 'dstx dsty'\n(0 <= n <= 4, or just enter return for a pass) B1: "
+prompt PawnPlacement White= "Enter the move coordinates for player White in the form 'dstx dsty'\n(0 <= n <= 4, or just enter return for a pass) W1: "
+                          
 
