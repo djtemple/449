@@ -163,30 +163,36 @@ update a black white bValid wValid = GameState
      3. checks if pieces are landing on the same square and places a piece, or leaves the cell empty accordingly
      4. otherwise, simply places both pieces
 -}
+
+fs :: (a,b) -> b
+fs (a,b) = b
+
 makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
 
 -- | no updates (called if both player moves are invalid)
 makeBoard a Nothing Nothing = theBoard a
 
 -- | White moves; Black move is Nothing or invalid
-makeBoard a Nothing (Just [src, dst]) =
-                        (replace2
-                          (replace2
-                            (theBoard a)
-                            dst
-                            (getFromBoard (theBoard a) (src)))
-                          src
-                          E)
+makeBoard a Nothing (Just [src, dst]) = if (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP)  then
+                            (replace2 (replace2 (theBoard a) (dst) WK) src E)
+                            else (replace2
+                            (replace2
+                              (theBoard a)
+                              dst
+                              (getFromBoard (theBoard a) (src)))
+                            src
+                            E)
 
 -- | Black moves; White move is Nothing or invalid
-makeBoard a (Just [src, dst]) Nothing =
-                        (replace2
-                          (replace2
-                            (theBoard a)
-                            dst
-                            (getFromBoard (theBoard a) (src)))
-                          src
-                          E)
+makeBoard a (Just [src, dst]) Nothing = if (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP)  then
+                            (replace2 (replace2 (theBoard a) (dst) BK) src E)
+                            else (replace2
+                            (replace2
+                              (theBoard a)
+                              dst
+                              (getFromBoard (theBoard a) (src)))
+                            src
+                            E)
 
 -- | Both players move. Check if pieces are swapping or clashing and represent accordinly
 makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
@@ -220,29 +226,11 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
                                                                            (getFromBoard (theBoard a) b))
                                                                           b
                                                                           E)
+                                          | (((fs b') == 0) && (fs w' ==4)) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' WK) w E)
+                                          | ((fs b') == 0) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' (getFromBoard (theBoard a) w)) w E)
+                                          | ((fs w') == 4) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' (getFromBoard (theBoard a) b))  b E) w' WK) w E)
 
-                                          | otherwise                = (replace2
-                                                                         (replace2
-                                                                           (replace2
-                                                                             (replace2
-                                                                               (theBoard a)
-                                                                                b'
-                                                                               (getFromBoard (theBoard a) b))
-                                                                              b
-                                                                              E)
-                                                                            w'
-                                                                           (getFromBoard (theBoard a) w))
-                                                                          w
-                                                                          E)
-
--- Function to check if any of the pawns are able to be upgraded
-checkUpgrade :: GameState -> GameState
-
-
-
-
-
-
+                                          | otherwise                = (replace2 (replace2 (replace2(replace2 (theBoard a) b' (getFromBoard (theBoard a) b))  b E) w' (getFromBoard (theBoard a) w)) w E)
 
 -- Error/Validity Checking --------------------------------------------------------------------------------------
 {- | Check if an arbitrary move is valid
@@ -251,7 +239,7 @@ checkUpgrade :: GameState -> GameState
      3. check that the destination square is in line with the rules of the piece
 -}
 checkMove :: GameState -> Player -> (Int, Int) -> (Int, Int) -> Bool
-checkMove b player src dst  | ((getFromBoard (theBoard b) src) == E)                                       = False
+checkMove b player src dst  | ((getFromBoard (theBoard b) src)== E)                                        = False
                             | (((getFromBoard (theBoard b) src) == WK) && (player == Black))               = False
                             | (((getFromBoard (theBoard b) src) == WP) && (player == Black))               = False
                             | (((getFromBoard (theBoard b) src) == BK) && (player == White))               = False
@@ -332,9 +320,9 @@ numPieces' a p x y sum = numPieces' a p (x+1) y (if ((getFromBoard (theBoard a) 
      4. if both players have 2 penalties (or neither has 2 penalties) and both players have the same number of pawns, the game is tied
 -}
 winner :: GameState -> String
-winner a | ((((blackPen a) == 2) && ((whitePen a) == 2)) && ((numPieces a WP) > (numPieces a BP))) = "White wins!"
-         | (((blackPen a) == 2) && ((whitePen a) /= 2))= "White wins!"
-         | ((((blackPen a) /= 2) && ((whitePen a) /= 2)) && ((numPieces a WP) > (numPieces a BP))) = "White wins!"
+winner a | ((((blackPen a) == 20) && ((whitePen a) == 20)) && ((numPieces a WP) > (numPieces a BP))) = "White wins!"
+         | (((blackPen a) == 20) && ((whitePen a) /= 20))= "White wins!"
+         | ((((blackPen a) /= 20) && ((whitePen a) /= 20)) && ((numPieces a WP) > (numPieces a BP))) = "White wins!"
          | ((((blackPen a) == 2) && ((whitePen a) == 2)) && ((numPieces a WP) == (numPieces a BP))) = "Tie!"
          | ((((blackPen a) /= 2) && ((whitePen a) /= 2)) && ((numPieces a WP) == (numPieces a BP))) = "Tie!"
          | otherwise = "Black wins!"
