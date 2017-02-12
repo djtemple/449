@@ -173,15 +173,9 @@ makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
 makeBoard a Nothing Nothing = theBoard a
 
 -- | White moves; Black move is Nothing or invalid
-makeBoard a Nothing (Just [src, dst]) = if (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP)  then
-                            (replace2 (replace2 (theBoard a) (dst) WK) src E)
-                            else (replace2
-                            (replace2
-                              (theBoard a)
-                              dst
-                              (getFromBoard (theBoard a) (src)))
-                            src
-                            E)
+makeBoard a Nothing (Just [src, dst]) | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP && ((numPieces a WK) < 2)) = (replace2 (replace2 (theBoard a) (dst) WK) src E)
+                                      | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement White) WP)
+                                      | otherwise (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
 
 -- | Black moves; White move is Nothing or invalid
 makeBoard a (Just [src, dst]) Nothing = if (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP)  then
