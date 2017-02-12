@@ -237,7 +237,7 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
 
 -- Function to check if any of the pawns are able to be upgraded
 checkUpgrade :: GameState -> GameState
-if ((getFromBoard (theBoard b) (0,1)) == WP) then replace2(theBoard (0,1) WK) = GameState
+
 
 
 
