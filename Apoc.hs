@@ -175,18 +175,18 @@ makeBoard a Nothing Nothing = theBoard a
 -- | White moves; Black move is Nothing or invalid
 makeBoard a Nothing (Just [src, dst]) | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP && (numPieces a WK) < 2) = (replace2 (replace2 (theBoard a) (dst) WK) src E)
                                       | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement White) WP)
-                                      | otherwise (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
+                                      | otherwise = (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
 
 -- | Black moves; White move is Nothing or invalid
 makeBoard a (Just [src, dst]) Nothing = if (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP)  then
                             (replace2 (replace2 (theBoard a) (dst) BK) src E)
                             else (replace2
-                            (replace2
-                              (theBoard a)
-                              dst
-                              (getFromBoard (theBoard a) (src)))
-                            src
-                            E)
+                                    (replace2
+                                      (theBoard a)
+                                      dst
+                                      (getFromBoard (theBoard a) (src)))
+                                    src
+                                    E)
 
 -- | Both players move. Check if pieces are swapping or clashing and represent accordinly
 makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
