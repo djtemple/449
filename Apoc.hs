@@ -220,8 +220,7 @@ pawnMove a b w bsrc wsrc (True, False) = do
 
 
 pawnMove a b w bsrc wsrc (False, True) = do 
-  bMove <- if (checkUpgrade a bsrc Black) then (return (Just [(-1, 0)])) else b a PawnPlacement Black
-  wMove <- if (checkUpgrade a wsrc White) then (return (Just [(0, -1)])) else w a PawnPlacement Black
+  wMove <- if (checkUpgrade a wsrc White) then (return (Just [(0, -1)])) else w a PawnPlacement White
   let new = GameState
             (None)
             (blackPen a)
