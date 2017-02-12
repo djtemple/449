@@ -156,6 +156,9 @@ update a black white bValid wValid = GameState
                          then (whitePen a)
                          else ((whitePen a) + 1))
                         (makeBoard a (if bValid then black else Nothing) (if wValid then white else Nothing))
+-- | helper function --
+fs :: (a,b) -> b
+fs (a,b) = b
 
 {- | updates the gameboard
      1. simple update if both moves are nothing, or only one player moves
@@ -164,8 +167,7 @@ update a black white bValid wValid = GameState
      4. otherwise, simply places both pieces
 -}
 
-fs :: (a,b) -> b
-fs (a,b) = b
+
 
 makeBoard :: GameState -> Maybe [(Int, Int)] -> Maybe [(Int, Int)] -> [[Cell]]
 
@@ -174,12 +176,18 @@ makeBoard a Nothing Nothing = theBoard a
 
 -- | White moves; Black move is Nothing or invalid
 makeBoard a Nothing (Just [src, dst]) | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP && (numPieces a WK) < 2) = (replace2 (replace2 (theBoard a) (dst) WK) src E)
-                                      | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement White) WP) -- TODO fix --
+                                      | (((fs dst) == 4) && (getFromBoard (theBoard a) src) == WP) = do
+                                        coords <- human a PawnPlacement -- TODO complete --
+                                        coords <- fromJust coords
+                                        (replace2 (theBoard a) (dst) E) coords WP)
                                       | otherwise = (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
 
 -- | Black moves; White move is Nothing or invalid
 makeBoard a (Just [src, dst]) Nothing | (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP && (numPieces a BK) < 2) = (replace2 (replace2 (theBoard a) (dst) BK) src E)
-                                      | (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP) = (replace2 (replace2 (theBoard a) (dst) E) (human a PawnPlacement Black) BP) -- TODO fix--
+                                      | (((fs dst) == 0) && (getFromBoard (theBoard a) src) == BP) = do
+                                        coords <- human a PawnPlacement -- TODO complete --
+                                        coords <- fromJust coords
+                                        (replace2 (theBoard a) (dst) E) coords BP)
                                       | otherwise = (replace2 (replace2 (theBoard a) dst (getFromBoard (theBoard a) (src))) src E)
 
 -- | Both players move. Check if pieces are swapping or clashing and represent accordinly
@@ -217,11 +225,15 @@ makeBoard a (Just [b, b']) (Just [w, w']) | ((b == w') && (w == b')) = (replace2
 
                                           -- | for when both moves result in a transformation of the pawns to knights --
                                           | (((fs b') == 0) && (fs w' ==4) && ((numPieces a WK) < 2) && ((numPieces a BK) < 2)) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' WK) w E)
+
                                           -- | for when both pawns reach the end but only white is able to transform --
+                                          | (((fs b') == 0) && (fs w' ==4) && ((numPieces a WK) < 2) && ((numPieces a BK) >= 2)) =
 
                                           -- | for when both pawns reach the end but only black is able to transform --
+                                          | (((fs b') == 0) && (fs w' ==4) && ((numPieces a WK) >= 2) && ((numPieces a BK) < 2)) =
 
                                           -- | for when both pawns reach the end but both cannot transform and must do pawnPlacement--
+                                          | (((fs b') == 0) && (fs w' ==4) && ((numPieces a WK) >= 2) && ((numPieces a BK) >= 2)) =
 
                                           -- | for when only the black pawn gets the upgrade to a knight --
                                           | ((fs b') == 0 && (numPieces a BK) < 2) = (replace2 (replace2 (replace2(replace2 (theBoard a) b' BK)  b E) w' (getFromBoard (theBoard a) w)) w E)
