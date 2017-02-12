@@ -23,6 +23,8 @@ module ApocAltStrategyCPU (
 
 import ApocTools
 import ApocStrategyCPU
+import System.IO.Unsafe
+import System.Random
 
 
 
@@ -43,12 +45,15 @@ deterministicMovePawn b player = selectPawnNonRandom ( generateAllEmptyMoves b )
 deterministicMoveNormal :: GameState -> Player -> IO(Maybe [(Int, Int)])
 deterministicMoveNormal b player = chooseNonRandom ( checkMoveGenPlayer (theBoard b) player (generateMove (theBoard b)) )
 
-{- | Selects the first move from a list of moves
+{- | Selects the first move from a list of moves, but has a 1 in 10 chance of pulling a random move to get out of loops
 -}
 chooseNonRandom :: [((Int,Int) , (Int, Int))] -> IO (Maybe [(Int,Int)])
 chooseNonRandom []   = return(Nothing)
 chooseNonRandom list = do
-       return (Just (getNormalMoveAtIndex list 1))
+   int <- randomRIO (0 , 10) :: IO Integer
+   if int >= 10
+       then chooseRandom (list)
+       else return (Just (getNormalMoveAtIndex list 0))
 
 {- | Selects a pawn from a list and returns its index
 -}
@@ -56,3 +61,4 @@ selectPawnNonRandom :: [ (Int,Int)] ->IO (Maybe [(Int,Int)])
 selectPawnNonRandom [] = return(Nothing)
 selectPawnNonRandom list = do
       return(Just(getPawnMoveAtIndex list 1))
+
